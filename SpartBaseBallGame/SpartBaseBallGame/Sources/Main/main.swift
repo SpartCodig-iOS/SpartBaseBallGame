@@ -7,7 +7,7 @@
 
 import Foundation
 
-let gameManger = GameManger()
+let gameManger = GameManager()
 
 await gameManger.baseBallGameStart()
 
