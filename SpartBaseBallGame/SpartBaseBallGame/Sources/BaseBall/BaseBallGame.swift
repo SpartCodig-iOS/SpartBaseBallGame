@@ -11,6 +11,13 @@ import LogMacro
 actor BaseBallGame {
   private let digits = 3
   private var records: [Int] = []
+  private let generator: AnswerGeneratorProtocol
+
+  init(records: [Int] = [],  generator: AnswerGeneratorProtocol = RandomAnswerGenerator()) {
+    self.records = records
+    self.generator = generator
+  }
+
 
   // MARK: - 게임시작 관련
   func start() async {
@@ -27,10 +34,10 @@ actor BaseBallGame {
       case 1:
         #logDebug("\(choice) // 1번 게임 시작하기 입력")
         let attempts = await startGame()
-
+        await saveRecord(attempts)
       case 2:
         #logDebug("\(choice) // 2번 게임 기록 보기 입력")
-
+        await showRecords()
       case 3:
         #logDebug("\(choice) // 3번 종료하기 입력")
         #logDebug("프로그램을 종료합니다.")
@@ -51,7 +58,7 @@ actor BaseBallGame {
   // MARK: - 게임 시작
   func startGame() async -> Int {
     #logDebug("< 게임을 시작합니다 >")
-    let answer = makeAnswer()
+    let answer =  generator.make(digits: digits)
     #logDebug("정답 생성: \(answer)")
 
     var attempts = 0
@@ -84,6 +91,23 @@ actor BaseBallGame {
     }
   }
 
+  // MARK: - 기록 저장/출력
+  private func saveRecord(_ attempts: Int) async {
+    records.append(attempts)
+  }
+
+  private func showRecords()  async {
+    #logDebug("< 게임 기록 보기 >")
+    if records.isEmpty {
+      #logDebug("완료된 게임 기록이 없습니다.")
+      return
+    }
+
+    for (index, value) in records.enumerated() {
+      #logDebug("\(index + 1)번째 게임 : 시도 횟수 - \(value)")
+    }
+  }
+
   // MARK: - 입력 파싱
   private func parseGuess(from input: String) -> [Int]? {
     let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -98,19 +122,11 @@ actor BaseBallGame {
 
   // MARK: - 판정
   private func judge(answer: [Int], guess: [Int]) -> JudgeResult {
-    let strikeCount = zip(answer, guess).filter { $0 == $1 }.count
-    let ballCount = guess.filter { answer.contains($0) }.count - strikeCount
-    if strikeCount == answer.count { return .correct }
-    if strikeCount == .zero && ballCount == .zero { return .nothing }
-    return .strikeAndBall(strike: strikeCount, ball: ballCount)
-  }
-
-  // MARK: - 정답 생성 (첫 자리 1~9, 이후 0 허용, 중복 금지)
-  private func makeAnswer() -> [Int] {
-    let firstNumber = Int.random(in: 1...9)
-    var pool = Array(0...9).filter { $0 != firstNumber }
-    pool.shuffle()
-    return [firstNumber] + pool.prefix(digits - 1)
+    let strike = zip(answer, guess).filter { $0 == $1 }.count
+    let ball = Set(answer).intersection(guess).count - strike
+    if strike == answer.count { return .correct }
+    if strike == 0 && ball == 0 { return .nothing }
+    return .strikeAndBall(strike: strike, ball: ball)
   }
 
   // MARK: - readLine 비동기 래핑
