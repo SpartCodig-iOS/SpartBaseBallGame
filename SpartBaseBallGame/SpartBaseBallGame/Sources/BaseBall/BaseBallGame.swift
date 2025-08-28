@@ -59,8 +59,7 @@ actor BaseBallGame {
   private func judge(answer: [Int], guess: [Int]) -> JudgeResult {
     let strikeCount = zip(answer, guess).filter { $0 == $1 }.count
     let ballCount = guess.filter { answer.contains($0) }.count - strikeCount
-
-    if strikeCount == digits { return .correct }
+    if strikeCount == answer.count { return .correct }
     if strikeCount == 0 && ballCount == 0 { return .nothing }
     return .strikeAndBall(strike: strikeCount, ball: ballCount)
   }
