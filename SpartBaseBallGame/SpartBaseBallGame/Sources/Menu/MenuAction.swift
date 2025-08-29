@@ -19,9 +19,9 @@ struct MenuAction: Sendable {
         """, )
 
     guard let line = await io.readLine()?.trimmingCharacters(in: .whitespacesAndNewlines),
-          let n = Int(line) else { return .invalid }
+          let menuNumber = Int(line) else { return .invalid }
 
-    switch n {
+    switch menuNumber {
       case 1: return .startGame
       case 2: return .showRecords
       case 3: return .quit

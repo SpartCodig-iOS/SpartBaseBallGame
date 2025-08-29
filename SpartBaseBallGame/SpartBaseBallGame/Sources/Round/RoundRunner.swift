@@ -37,9 +37,10 @@ struct RoundRunner {
           return attempts
         case .nothing:
           console.show("Nothing")
-        case let .strikeAndBall(s, b):
-          console.show([s > .zero ? "\(s)스트라이크" : nil,
-                        b > .zero ? "\(b)볼" : nil].compactMap { $0 }.joined(separator: " "))
+        case let .strikeAndBall(strike, ball):
+          console.show(
+            [strike > .zero ? "\(strike)스트라이크" : nil,
+             ball > .zero ? "\(ball)볼" : nil].compactMap { $0 }.joined(separator: " "))
       }
     }
   }
